@@ -84,7 +84,7 @@ unique across the entire ceph cluster, not just the local filesystem.
 	\label{fig:object_metadata}
 \end{figure}
 
-\subsection{Scalability and High Availability}
+\subsection{Scalability and High Availability} \label{scal_and_high_avail}
 
 In traditional architectures, clients talk to a centralized component (e.g., a
 gateway, broker, API, facade, etc.), which acts as a single point of entry to a
@@ -328,5 +328,14 @@ The ability to leverage this computing power leads to several major benefits:
 \end{figure}
 
 With the ability to perform data replication, Ceph OSD Daemons relieve Ceph clients from that duty, while ensuring high data availability and data safety.
+
+\subsection{Dynamic Cluster Management}
+
+In the section \ref{scal_and_high_avail}, we explained how Ceph uses CRUSH,
+cluster awareness and intelligent daemons to scale and maintain high
+availability. Key to Ceph’s design is the autonomous, self-healing, and
+intelligent Ceph OSD Daemon. Let’s take a deeper look at how CRUSH works to
+enable modern cloud storage infrastructures to place data, rebalance the
+cluster and recover from faults dynamically.
 
 \end{document}
