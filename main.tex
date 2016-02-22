@@ -108,7 +108,7 @@ hyper-scale storage. The following sections provide additional details on how
 CRUSH works. For a detailed discussion of CRUSH, see CRUSH - Controlled,
 Scalable, Decentralized Placement of Replicated Data. \ref{crush_chapter}
 
-\subsection{Cluster Map}
+\subsection{Cluster Map} \label{cluster_map}
 
 Ceph depends upon Ceph Clients and Ceph OSD Daemons having knowledge of the
 cluster topology, which is inclusive of 5 maps collectively referred to as the
@@ -335,5 +335,28 @@ availability. Key to Ceph’s design is the autonomous, self-healing, and
 intelligent Ceph OSD Daemon. Let’s take a deeper look at how CRUSH works to
 enable modern cloud storage infrastructures to place data, rebalance the
 cluster and recover from faults dynamically.
+
+\subsection{About Pools}
+The Ceph storage system supports the notion of 'Pools', which are logical
+partitions for storing objects.
+
+Ceph Clients retrieve a Cluster Map(\ref{cluster_map}) from a Ceph Monitor, and
+write objects to pools. The pool's size or number of replicas, the CRUSH
+ruleset and the number of placement groups determine how Ceph will place the
+data.
+
+\begin{figure}[h]
+	\includegraphics[scale=0.75]{pool_usage.png}
+	\caption{Writing Data to Pools}
+	\label{fig:pool_usage}
+\end{figure}
+
+Pools set at least the following parameters:
+
+\begin{itemize}
+	\item Ownership/Access to Objects
+	\item The Number of Placement Groups, and
+	\item The CRUSH Ruleset to Use
+\end{itemize}
 
 \end{document}
