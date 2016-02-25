@@ -476,4 +476,14 @@ OSD after rebalancing is complete.
 	\label{fig:pg_rebalancing}
 \end{figure}
 
+\subsection{Data Consistency}
+
+As part of maintaining data consistency and cleanliness, Ceph OSDs can also
+scrub objects within placement groups. That is, Ceph OSDs can compare object
+metadata in one placement group with its replicas in placement groups stored in
+other OSDs. Scrubbing (usually performed daily) catches OSD bugs or filesystem
+errors. OSDs can also perform deeper scrubbing by comparing data in objects
+bit-for-bit. Deep scrubbing (usually performed weekly) finds bad sectors on a
+disk that weren’t apparent in a light scrub.
+
 \end{document}
