@@ -325,7 +325,8 @@ The ability to leverage this computing power leads to several major benefits:
 	\label{fig:osd_replication}
 \end{figure}
 
-With the ability to perform data replication, Ceph OSD Daemons relieve Ceph clients from that duty, while ensuring high data availability and data safety.
+With the ability to perform data replication, Ceph OSD Daemons relieve Ceph
+clients from that duty, while ensuring high data availability and data safety.
 
 \subsection{Dynamic Cluster Management}
 
@@ -358,5 +359,31 @@ Pools set at least the following parameters:
 	\item The Number of Placement Groups, and
 	\item The CRUSH Ruleset to Use
 \end{itemize}
+
+\subsection{Mapping PGs to OSDs}
+
+Each pool has a number of placement groups. CRUSH maps PGs to OSDs dynamically.
+When a Ceph Client stores objects, CRUSH will map each object to a placement
+group.
+
+Mapping objects to placement groups creates a layer of indirection between the
+Ceph OSD Daemon and the Ceph Client. The Ceph Storage Cluster must be able to
+grow (or shrink) and rebalance where it stores objects dynamically. If the Ceph
+Client “knew” which Ceph OSD Daemon had which object, that would create a tight
+coupling between the Ceph Client and the Ceph OSD Daemon. Instead, the CRUSH
+algorithm maps each object to a placement group and then maps each placement
+group to one or more Ceph OSD Daemons. This layer of indirection allows Ceph to
+rebalance dynamically when new Ceph OSD Daemons and the underlying OSD devices
+come online. The diagram(\ref{fig:pg_mapping}) depicts how CRUSH maps objects to
+placement groups, and placement groups to OSDs.
+
+\begin{figure}[h]
+	\includegraphics[scale=0.60]{pg_mapping.png}
+	\caption{PG mapping}
+	\label{fig:pg_mapping}
+\end{figure}
+
+With a copy of the cluster map and the CRUSH algorithm, the client can compute
+exactly which OSD to use when reading or writing a particular object.
 
 \end{document}
