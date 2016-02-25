@@ -386,7 +386,7 @@ placement groups, and placement groups to OSDs.
 With a copy of the cluster map and the CRUSH algorithm, the client can compute
 exactly which OSD to use when reading or writing a particular object.
 
-\subsection{Calculating PG IDs}
+\subsection{Calculating PG IDs}\label{calculating_pg_ids}
 
 When a Ceph Client binds to a Ceph Monitor, it retrieves the latest copy of the
 Cluster Map. With the cluster map, the client knows about all of the monitors,
@@ -457,5 +457,23 @@ when an OSD fails.
 \emph{In an Acting Set for a PG containing osd.25, osd.32 and osd.61, the first
 OSD, osd.25, is the Primary. If that OSD fails, the Secondary, osd.32,
 becomes the Primary, and osd.25 will be removed from the Up Set.}
+
+\subsection{Rebalancing}
+When you add a Ceph OSD Daemon to a Ceph Storage Cluster, the cluster map gets
+updated with the new OSD. Referring back to \ref{calculating_pg_ids}, this changes
+the cluster map. Consequently, it changes object placement, because it changes
+an input for the calculations. Diagram \ref{fig:pg_rebalancing} depicts the rebalancing
+process (albeit rather crudely, since it is substantially less impactful with
+large clusters) where some, but not all of the PGs migrate from existing OSDs
+(OSD 1, and OSD 2) to the new OSD (OSD 3). Even when rebalancing, CRUSH is
+stable. Many of the placement groups remain in their original configuration,
+and each OSD gets some added capacity, so there are no load spikes on the new
+OSD after rebalancing is complete.
+
+\begin{figure}[h]
+	\includegraphics[scale=0.60]{pg_rebalancing.png}
+	\caption{PG rebalancing}
+	\label{fig:pg_rebalancing}
+\end{figure}
 
 \end{document}
