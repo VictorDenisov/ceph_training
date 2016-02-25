@@ -73,8 +73,8 @@ hierarchy of directories). An object has an identifier, binary data, and
 metadata consisting of a set of name/value pairs. The semantics are completely
 up to Ceph Clients. For example, CephFS uses metadata(figure
 \ref{fig:object_metadata}) to store file attributes such as the file owner,
-created date, last modified date, and so forth. Every object has an id which is
-unique across the entire ceph cluster, not just the local filesystem.
+created date, last modified date, and so forth. \emph{Every object has an id which is
+unique across the entire ceph cluster, not just the local filesystem.}
 
 \begin{figure}[h]
 	\includegraphics[scale=0.60]{object_metadata.png}
@@ -163,9 +163,9 @@ current state of the cluster.
 
 \subsection{High Availability Authentication}
 To identify users and protect against man-in-the-middle attacks, Ceph provides
-its cephx authentication system to authenticate users and daemons.  The cephx
-protocol does not address data encryption in transport (e.g., SSL/TLS) or
-encryption at rest.
+its cephx authentication system to authenticate users and daemons.  \emph{The
+cephx protocol does not address data encryption in transport (e.g., SSL/TLS) or
+encryption at rest.}
 
 Cephx uses shared secret keys for authentication, meaning both the client and
 the monitor cluster have a copy of the client’s secret key. The authentication
@@ -205,8 +205,8 @@ generates the username and key, stores a copy with the monitor(s) and transmits
 the user’s secret back to the client.admin user. This means that the client and
 the monitor share a secret key.
 
-The client.admin user must provide the user ID and secret key to the user in a
-secure manner.
+\emph{The client.admin user must provide the user ID and secret key to the user in a
+secure manner.}
 
 \begin{figure}[h]
 	\includegraphics[scale=0.75]{create_user.png}
@@ -402,17 +402,60 @@ it calculates a placement group using the object name, a hash code, the number
 of PGs in the pool and the pool name. Ceph clients use the following steps to
 compute PG IDs.
 
-\begin{enumeration}
-	\item The client inputs the pool ID and the object ID. (e.g., pool = “liverpool” and object-id = “john”)
+\begin{enumerate}
+	\item The client inputs the pool ID and the object ID. (e.g., pool =
+		“liverpool” and object-id = “john”)
 	\item Ceph takes the object ID and hashes it.
-	\item Ceph calculates the hash modulo the number of PGs. (e.g., 58) to get a PG ID.
+	\item Ceph calculates the hash modulo the number of PGs. (e.g., 58) to
+		get a PG ID.
 	\item Ceph gets the pool ID given the pool name (e.g., “liverpool” = 4)
 	\item Ceph prepends the pool ID to the PG ID (e.g., 4.58).
-\end{enumeration}
+\end{enumerate}
 
 Computing object locations is much faster than performing object location query
 over a chatty session. The CRUSH algorithm allows a client to compute where
 objects should be stored, and enables the client to contact the primary OSD to
 store or retrieve the objects.
+
+\subsection{Peering and Sets}
+
+In previous sections, we noted that Ceph OSD Daemons check each others
+heartbeats and report back to the Ceph Monitor. Another thing Ceph OSD daemons
+do is called ‘peering’, which is the process of bringing all of the OSDs that
+store a Placement Group (PG) into agreement about the state of all of the
+objects (and their metadata) in that PG. In fact, Ceph OSD Daemons Report
+Peering Failure to the Ceph Monitors. Peering issues usually resolve
+themselves; however, if the problem persists, you may need to refer to the
+Troubleshooting Peering Failure section. \emph{Agreeing on the state does not mean
+that the PGs have the latest contents.}
+
+The Ceph Storage Cluster was designed to store at least two copies of an object
+(i.e., size = 2), which is the minimum requirement for data safety. For high
+availability, a Ceph Storage Cluster should store more than two copies of an
+object (e.g., size = 3 and min size = 2) so that it can continue to run in a
+degraded state while maintaining data safety.
+
+Referring back to the diagram \ref{fig:osd_replication}, we do not
+name the Ceph OSD Daemons specifically (e.g., osd.0, osd.1, etc.), but rather
+refer to them as Primary, Secondary, and so forth. By convention, the Primary
+is the first OSD in the Acting Set, and is responsible for coordinating the
+peering process for each placement group where it acts as the Primary, and is
+the ONLY OSD that that will accept client-initiated writes to objects for a
+given placement group where it acts as the Primary.
+
+When a series of OSDs are responsible for a placement group, that series of
+OSDs, we refer to them as an Acting Set. An Acting Set may refer to the Ceph
+OSD Daemons that are currently responsible for the placement group, or the Ceph
+OSD Daemons that were responsible for a particular placement group as of some
+epoch.
+
+The Ceph OSD daemons that are part of an Acting Set may not always be up. When
+an OSD in the Acting Set is up, it is part of the Up Set. The Up Set is an
+important distinction, because Ceph can remap PGs to other Ceph OSD Daemons
+when an OSD fails.
+
+\emph{In an Acting Set for a PG containing osd.25, osd.32 and osd.61, the first
+OSD, osd.25, is the Primary. If that OSD fails, the Secondary, osd.32,
+becomes the Primary, and osd.25 will be removed from the Up Set.}
 
 \end{document}
