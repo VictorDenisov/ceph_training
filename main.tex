@@ -615,6 +615,84 @@ four different bucket types,  each with a different selection algorithm to
 address data movement resulting from the addition or removal of devices and
 overall computational complexity.
 
+\subsection{Replica Placement}
+
+CRUSH  is  designed  to  distribute  data  uniformly  among weighted devices to
+maintain a statistically balanced utilization of storage and device bandwidth
+resources. The placement of replicas on storage devices in the hierarchy can
+also have a  critical effect on data safety. By reflecting the underlying
+physical organization of the installation, CRUSH can model --- and thereby
+address --- potential sources of correlated  device  failures. Typical sources
+include physical proximity, a shared power source, and a shared network. By
+encoding this information into the cluster map, CRUSH placement policies can
+separate object replicas across different failure domains while still
+maintaining the desired distribution. For example, to address the possibility
+of concurrent failures, it may be desirable to ensure that data replicas are on
+devices in different shelves, racks, power supplies, controllers, and/or
+physical locations.
+
+In order to accommodate the wide variety of scenarios in which CRUSH might be
+used, both in terms of data replication strategies and underlying hardware
+configurations, CRUSH defines placement rules for each replication strategy or
+distribution policy employed that allow the storage system or administrator to
+specify exactly how object replicas are placed. For example, one might have a
+rule selecting a pair of targets for 2-way mirroring, one for selecting three
+targets in two different data centers for 3-way mirroring, one for RAID-4 over
+six storage devices, and so on.
+
+Each rule consists of a sequence of operations applied to the hierarchy in a
+simple execution environment, presented as pseudocode in Algorithm 1. The
+integer input to the CRUSH function, $x$, is typically an object name or other
+identifier, such as an identifier for a group of objects whose replicas will be
+placed on the same devices. The $take(a)$ operation selects an item (typically
+a bucket) within the storage hierarchy and assigns it to the vector $\vec{i}$,
+which serves as an input to subsequent operations. The $select(n,t)$ operation
+iterates over each element $i \in \vec{i}$, and chooses $n$ distinct items of
+type $t$ in the subtree rooted at that point. Storage devices have a known,
+fixed type, and each bucket in the system has a type field that is used to
+distinguish between classes of buckets (e. g., those representing ``rows'' and
+those representing ``cabinets'').  For each $i \in \vec{i}$, the $select(n,t)$
+call iterates over the $r \in 1,\dots,n$ items requested  and  recursively
+descends through any intermediate buckets, pseudo-randomly selecting a nested
+item in each bucket using the function $c(r,x)$ (defined for each kind of
+bucket in \ref{bucket_types}), until it finds an item of the requested type
+$t$. The resulting $n|\vec{i}|$ distinct items are placed back into the input
+$\vec{i}$ and either form the input for a subsequent $select(n,t)$ or are moved
+into the result vector with an $emit$ operation.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{ |c|c| }
+	\hline
+	\emph{Action} & \emph{Resulting $\vec{i}$} \\
+	\hline
+	$take(root)$ & root \\
+	$select(1,row)$ & row2 \\
+	$select(3,cabinet)$ & cab21 cab23 cab24 \\
+	$select(1,disk)$ & disk2107 disk2313 disk2437 \\
+	$emit$ & \\
+	\hline
+\end{tabular}
+\caption{A simple rule that distributes three replicas across three cabinets in the same row.}
+\label{table:1}
+\end{table}
+
+As an example, the rule defined in Table \ref{table:1} begins at the root of the hierarchy
+in Figure 1 and with the first $select(1,row)$ chooses a single bucket of type
+``row'' (it selects row 2). The subsequent $select(3,cabinet)$ chooses three
+distinct cabinets nested  beneath the previously selected $row2 (cab21, cab23,
+cab24)$, while the final $select(1,disk)$ iterates over the three cabinet
+buckets in the input vector and chooses a single disk nested beneath each of
+them. The final result is three disks spread over three cabinets, but all in
+the same row. This approach thus allows replicas to be simultaneously separated
+across and constrained within container types (e.g. rows, cabinets, shelves), a
+useful property for both reliability and performance considerations. Rules
+consisting of multiple $take$, $emit$ blocks allow storage targets to be
+explicitly drawn from different pools of storage, as might be expected in
+remote replication scenarios (in which one replica is stored at a remote site)
+or tiered installations (e. g., fast, near-line storage and slower,
+higher-capacity arrays).
+
 \section{Self Check Questions}
 
 \begin{itemize}
