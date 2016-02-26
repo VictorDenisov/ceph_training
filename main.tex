@@ -587,6 +587,34 @@ items stored on any storage device. We say that CRUSH generates a declustered
 distribution of replicas in that the set of devices sharing replicas for one
 item also appears to be independent of all other items
 
+\subsection{Hierarchical Cluster Map}
+
+The cluster map is composed of devices and buckets, both of which have
+numerical identifiers and weight values associated with them. Buckets can
+contain any number of devices or other buckets, allowing them to form interior
+nodes in a storage hierarchy in which devices are always at the leaves. Storage
+devices are assigned weights by the administrator to control the relative
+amount of data they are responsible for storing.  Although a large system will
+likely contain devices with a variety of capacity and performance
+characteristics, randomized  data  distributions  statistically  correlate
+device utilization with workload, such that device load is on average
+proportional to the amount of data stored. This results in a one-dimensional
+placement metric, weight, which should be derived from the device's
+capabilities. Bucket weights are defined as the sum of the weights of the items
+they contain. Buckets can be composed arbitrarily to construct a hierarchy
+representing available storage. For example, one might create a cluster map
+with ``shelf'' buckets at the lowest level to  represent sets  of  identical
+devices as  they  are  installed, and  then  combine shelves into ``cabinet''
+buckets to  group together shelves that are installed in the same rack.
+Cabinets might be further grouped into ``row'' or ``room'' buckets for a large
+system.  Data is placed in the hierarchy by recursively selecting nested bucket
+items via a pseudo-random hash-like function. In contrast to conventional
+hashing techniques, in which any change in the number of target bins (devices)
+results  in  a  massive  reshuffling  of  bin  contents,  CRUSH  is based on
+four different bucket types,  each with a different selection algorithm to
+address data movement resulting from the addition or removal of devices and
+overall computational complexity.
+
 \section{Self Check Questions}
 
 \begin{itemize}
