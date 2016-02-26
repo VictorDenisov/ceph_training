@@ -486,4 +486,86 @@ errors. OSDs can also perform deeper scrubbing by comparing data in objects
 bit-for-bit. Deep scrubbing (usually performed weekly) finds bad sectors on a
 disk that weren’t apparent in a light scrub.
 
+\section{Ceph Protocol}
+
+Ceph Clients use the native protocol for interacting with the Ceph Storage
+Cluster. Ceph packages this functionality into the librados library so that you
+can create your own custom Ceph Clients. Diagram \ref{fig:librados} depicts the
+basic architecture.
+
+\begin{figure}[h]
+	\includegraphics[scale=0.60]{librados.png}
+	\caption{Librados}
+	\label{fig:librados}
+\end{figure}
+
+\subsection{Native Protocol and librados}
+
+Modern applications need a simple object storage interface with asynchronous
+communication capability. The Ceph Storage Cluster provides a simple object
+storage interface with asynchronous communication capability. The interface
+provides direct, parallel access to objects throughout the cluster.
+
+\begin{itemize}
+	\item Pool Operations
+	\item Snapshots and Copy-on-write Cloning
+	\item Read/Write Objects - Create or Remove - Entire Object or Byte Range - Append or Truncate
+	\item Create/Set/Get/Remove XATTRs
+	\item Create/Set/Get/Remove Key/Value Pairs
+	\item Compound operations and dual-ack semantics
+	\item Object Classes
+\end{itemize}
+
+\section{Ceph Clients}
+Ceph Clients include a number of service interfaces. These include:
+
+\begin{itemize}
+	\item \emph{Block Devices}: The Ceph Block Device (a.k.a., RBD) service
+		provides resizable, thin-provisioned block devices with
+		snapshotting and cloning. Ceph stripes a block device across
+		the cluster for high performance. Ceph supports both kernel
+		objects (KO) and a QEMU hypervisor that uses librbd
+		directly–avoiding the kernel object overhead for virtualized
+		systems.
+
+	\item \emph{Object Storage}: The Ceph Object Storage (a.k.a., RGW)
+		service provides RESTful APIs with interfaces that are
+		compatible with Amazon S3 and OpenStack Swift.
+
+	\item \emph{Filesystem}: The Ceph Filesystem (CephFS) service provides
+		a POSIX compliant filesystem usable with mount or as a
+		filesytem in user space (FUSE).
+\end{itemize}
+
+Ceph can run additional instances of OSDs, MDSs, and monitors for scalability
+and high availability. Diagram \ref{fig:client_architecture} depicts the
+high-level architecture.
+
+\begin{figure}[h]
+	\includegraphics[scale=0.60]{client_architecture.png}
+	\caption{Ceph Client Architecture}
+	\label{fig:client_architecture}
+\end{figure}
+
+\subsection{Ceph Object Storage}
+
+The Ceph Object Storage daemon, radosgw, is a FastCGI service that provides a
+RESTful HTTP API to store objects and metadata. It layers on top of the Ceph
+Storage Cluster with its own data formats, and maintains its own user database,
+authentication, and access control. The RADOS Gateway uses a unified namespace,
+which means you can use either the OpenStack Swift-compatible API or the Amazon
+S3-compatible API. For example, you can write data using the S3-compatible API
+with one application and then read data using the Swift-compatible API with
+another application.
+
+\subsubsection{S3/Swift Objects and Store Cluster Objects Compared}
+
+Ceph’s Object Storage uses the term object to describe the data it stores. S3
+and Swift objects are not the same as the objects that Ceph writes to the Ceph
+Storage Cluster. Ceph Object Storage objects are mapped to Ceph Storage Cluster
+objects. The S3 and Swift objects do not necessarily correspond in a 1:1 manner
+with an object stored in the storage cluster. It is possible for an S3 or Swift
+object to map to multiple Ceph objects.
+
+
 \end{document}
