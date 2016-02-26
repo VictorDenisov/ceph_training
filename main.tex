@@ -562,7 +562,32 @@ objects. The S3 and Swift objects do not necessarily correspond in a 1:1 manner
 with an object stored in the storage cluster. It is possible for an S3 or Swift
 object to map to multiple Ceph objects.
 
-\subsection{Self Check Questions}
+\section{The CRUSH Algorithm}
+
+The CRUSH algorithm distributes data objects among storage devices according to
+a per-device weight value, approximating a uniform probability distribution.
+The distribution is controlled by a hierarchical cluster map representing the
+available storage resources and composed of the logical elements from which it
+is built.  For example, one might de- scribe a large installation in terms of
+rows of server cabinets, cabinets filled with disk shelves, and shelves filled
+with storage devices. The data distribution policy is defined in terms of
+placement rules that specify how many replica targets are chosen from the
+cluster  and what restrictions are  imposed on replica placement.  For example,
+one might specify that three mirrored replicas are  to be  placed on devices in
+different physical cabinets so that they do not share the same electrical
+circuit.
+
+Given a single integer input value $x$, CRUSH will output an ordered list
+$\vec{R}$ of $n$ distinct storage targets. CRUSH utilizes a strong multi-input
+integer hash function whose inputs include $x$, making the mapping completely
+deterministic and independently calculable using only the cluster map,
+placement rules, and $x$. The distribution is pseudo-random in that there is no
+apparent correlation between the resulting output from similar inputs or in the
+items stored on any storage device. We say that CRUSH generates a declustered
+distribution of replicas in that the set of devices sharing replicas for one
+item also appears to be independent of all other items
+
+\section{Self Check Questions}
 
 \begin{itemize}
 	\item What is RADOS?
