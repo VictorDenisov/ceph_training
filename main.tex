@@ -134,11 +134,6 @@ cluster topology, which is inclusive of 5 maps collectively referred to as the
 		filename;} then, decompile it by executing \emph{crushtool -d
 		comp-crushmap-filename -o decomp-crushmap-filename}. You can
 		view the decompiled map in a text editor or with cat.
-	\item \emph{The MDS Map}: Contains the current MDS map epoch, when the
-		map was created, and the last time it changed. It also contains
-		the pool for storing metadata, a list of metadata servers, and
-		which metadata servers are up and in. To view an MDS map,
-		execute \emph{ceph mds dump}.
 \end{enumerate}
 
 Each map maintains an iterative history of its operating state changes. Ceph
@@ -299,7 +294,7 @@ The ability to leverage this computing power leads to several major benefits:
 		daily) catches bugs or filesystem errors. Ceph OSD Daemons also
 		perform deeper scrubbing by comparing data in objects
 		bit-for-bit. Deep scrubbing (usually performed weekly) finds
-		bad sectors on a drive that weren’t apparent in a light scrub.
+		bad sectors on a drive that weren't apparent in a light scrub.
 		See Data Scrubbing for details on configuring scrubbing.
 
 	\item \emph{Replication}: Like Ceph Clients, Ceph OSD Daemons use the
@@ -374,7 +369,7 @@ coupling between the Ceph Client and the Ceph OSD Daemon. Instead, the CRUSH
 algorithm maps each object to a placement group and then maps each placement
 group to one or more Ceph OSD Daemons. This layer of indirection allows Ceph to
 rebalance dynamically when new Ceph OSD Daemons and the underlying OSD devices
-come online. The diagram(\ref{fig:pg_mapping}) depicts how CRUSH maps objects to
+come online. Diagram(\ref{fig:pg_mapping}) depicts how CRUSH maps objects to
 placement groups, and placement groups to OSDs.
 
 \begin{figure}[h]
@@ -390,7 +385,7 @@ exactly which OSD to use when reading or writing a particular object.
 
 When a Ceph Client binds to a Ceph Monitor, it retrieves the latest copy of the
 Cluster Map. With the cluster map, the client knows about all of the monitors,
-OSDs, and metadata servers in the cluster. However, it doesn’t know anything
+OSDs, and metadata servers in the cluster. However, it doesn't know anything
 about object locations.
 
 Object locations get computed.
@@ -484,7 +479,7 @@ metadata in one placement group with its replicas in placement groups stored in
 other OSDs. Scrubbing (usually performed daily) catches OSD bugs or filesystem
 errors. OSDs can also perform deeper scrubbing by comparing data in objects
 bit-for-bit. Deep scrubbing (usually performed weekly) finds bad sectors on a
-disk that weren’t apparent in a light scrub.
+disk that weren't apparent in a light scrub.
 
 \section{Ceph Protocol}
 
