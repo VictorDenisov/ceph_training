@@ -779,7 +779,7 @@ however, the rank or position of a storage device in the CRUSH output is
 critical because each target stores different bits of the data object. In
 particular, if a storage device fails, it should be replaced in CRUSH’s output
 list $\vec{R}$ in place, such that other devices in the list retain the same
-rank (i.e. position in $\vec{R}$, see Figure 2). In such cases, CRUSH reselects
+rank (i.e. position in $\vec{R}$, see Figure \ref{fig:reselection_behavior}). In such cases, CRUSH reselects
 using $r' = r + f_rn$, where $f_r$ is the number of failed attempts on $r$,
 thus defining a sequence of candidates for each replica rank that are
 probabilistically independent of others’ failures. In contrast, RUSH has no
@@ -798,6 +798,17 @@ placement algorithm (see Section 3.2.1). Such cluster map changes result in an
 optimal(minimum) fraction, $w_{failed} / W$ (where $W$ is the total weight of
 all devices), of total data to be remapped to new storage targets because only
 data on the failed device is moved.
+
+\begin{figure}[h!]
+	\includegraphics[scale=0.60]{reselection_behavior.png}
+\caption{Reselection behavior of $select(6,disk)$ when device $r = 2(b)$ is
+rejected, where the boxes contain the CRUSH output $\vec{R}$ of $n = 6$ devices
+numbered by rank. The left shows the ``first n'' approach in which device ranks
+of existing devices $(c,d,e,f)$ may shift. On the right, each rank has a
+probabilistically independent sequence of potential targets; here $f_r = 1$,
+and $r' = r + f_rn = 8$ (device $h$) }
+	\label{fig:reselection_behavior}
+\end{figure}
 
 The situation is more complex when the cluster hierarchy is modified, as with
 the addition or removal of storage resources. The CRUSH mapping process, which
