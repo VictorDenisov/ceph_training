@@ -1,6 +1,9 @@
 \documentclass[12pt,a4paper]{report}
 \usepackage{cclicenses}
 \usepackage{graphicx}
+\usepackage{algorithm}
+\usepackage{algorithmicx}
+\usepackage{algpseudocode}
 \title{Ceph Training Materials}
 \author{Victor Denisov}
 \date{\today}
@@ -640,8 +643,58 @@ rule selecting a pair of targets for 2-way mirroring, one for selecting three
 targets in two different data centers for 3-way mirroring, one for RAID-4 over
 six storage devices, and so on.
 
+\begin{algorithm}
+\caption{CRUSH placement for object $x$}
+\label{algorithm:1}
+\begin{algorithmic}[1]
+\Procedure {take}{$a$}
+	\State $i \gets [a]$
+\EndProcedure
+
+\Procedure {SELECT}{n,t} \Comment{Select $n$ items of type $t$}
+	\State $\vec{a} \gets \emptyset$
+	\For {$i \in \vec{i}$}
+		\State $f \gets 0$ \Comment{No failures yet}
+		\For {$r \gets 1,n$}
+			\State $f_r \gets 0$ \Comment{No failures on this replica}
+			\State $retry\_descent \gets false$
+			\Repeat
+				\State $ b \gets bucket(i) $
+				\State $ retry\_bucket \gets false $
+				\Repeat
+					\If {``first n''}
+						\State $r' \gets r + f$
+					\Else
+						\State $r' \gets r + f_rn$
+					\EndIf
+					\State $o \gets b.c(r',x)$ \Comment{c depends on bucket type. See \ref{bucket_types}}
+					\If {$type(o) \neq t$}
+						\State $b \gets bucket(o)$
+						\State $retry\_bucket \gets true$
+					\ElsIf {$o \in \vec{o}$ or $failed(o)$ or $overload(o,x)$}
+						\State $f_r \gets f_r + 1, f \gets f + 1$
+						\If{$o \in \vec{o}$ and $f_r < 3$}
+							\State $retry\_bucket \gets true$
+						\Else
+							\State $retry\_descent \gets true$
+						\EndIf
+					\EndIf
+				\Until {$\neg retry\_bucket$}
+			\Until {$\neg retry\_descent$}
+			\State $\vec{o} \gets [ \vec{o}, o ]$
+		\EndFor
+	\EndFor
+	\State $\vec{i} \gets \vec{o}$
+\EndProcedure
+
+\Procedure {EMIT}{}
+	\State $\vec{R} \gets [ \vec{R},\vec{i} ] $
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
 Each rule consists of a sequence of operations applied to the hierarchy in a
-simple execution environment, presented as pseudocode in Algorithm 1. The
+simple execution environment, presented as pseudocode in Algorithm \ref{algorithm:1}. The
 integer input to the CRUSH function, $x$, is typically an object name or other
 identifier, such as an identifier for a group of objects whose replicas will be
 placed on the same devices. The $take(a)$ operation selects an item (typically
