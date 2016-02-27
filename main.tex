@@ -746,6 +746,27 @@ remote replication scenarios (in which one replica is stored at a remote site)
 or tiered installations (e. g., fast, near-line storage and slower,
 higher-capacity arrays).
 
+\subsubsection{Collisions, Failure, and Overload}
+The $select(n,t)$ operation may traverse many levels of the storage hierarchy
+in order to locate $n$ distinct items of the specified type $t$ nested beneath
+its starting point, a recursive process partially parameterized by $r =
+1,\dots,n$, the replica number being chosen. During this process, CRUSH may
+reject and reselect items using a modified input $r'$ for three different
+reasons: if an item has already been selected in the current set (a collision
+--- the $select(n,t)$ result must be distinct), if a device is failed, or if a
+device is overloaded. Failed or overloaded devices are marked as such in the
+cluster map, but left in the hierarchy to avoid unnecessary shifting of data.
+CRUSH’s selectively diverts a fraction of an overloaded device’s data by
+pseudo-randomly rejecting with the probability specified in the cluster
+map-typically related to its reported over-utilization. For failed or
+overloaded devices, CRUSH uniformly redistributes items across the storage
+cluster by restarting the recursion at the beginning of the $select(n, t)$ (see
+Algorithm \ref{algorithm:1} line 11). In the case of collisions, an alternate
+$r'$ is used first at inner levels of the recursion to attempt a local search
+(see Algorithm \ref{algorithm:1} line 14) and avoid skewing the overall data
+distribution away from subtrees where collisions are more probable (e.g., where
+buckets are smaller than $n$).
+
 \section{Self Check Questions}
 
 \begin{itemize}
