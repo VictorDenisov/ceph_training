@@ -787,6 +787,42 @@ special handling of failed devices; like other existing hashing distribution
 functions, it implicitly assumes the use of a ``first n'' approach to skip over
 failed devices in the result, making it unweildly for parity schemes.
 
+\subsection{Map Changes and Data Movement}
+A critical element of data distribution in a large file system is the response
+to the addition or removal of storage resources. CRUSH maintains a uniform
+distribution of data and workload at all times in order to avoid load
+asymmetries and the related underutilization of available resources. When an
+individual device fails, CRUSH flags the device but leaves it in the hierarchy,
+where it will be rejected and its contents uniformly redistributed by the
+placement algorithm (see Section 3.2.1). Such cluster map changes result in an
+optimal(minimum) fraction, $w_{failed} / W$ (where $W$ is the total weight of
+all devices), of total data to be remapped to new storage targets because only
+data on the failed device is moved.
+
+The situation is more complex when the cluster hierarchy is modified, as with
+the addition or removal of storage resources. The CRUSH mapping process, which
+uses the cluster map as a weighted hierarchical decision tree, can result in
+additional data movement beyond the theoretical optimum of $\frac{\Delta
+w}{W}$. At each level of the hierarchy, when a shift in relative subtree
+weights alters the distribution, some data objects must move from from subtrees
+with decreased weight to those with increased weight. Because the pseudo-random
+placement decision at each node in the hierarchy is statistically independent,
+data moving into a subtree is uniformly redistributed beneath that point, and
+does not necessarily get remapped to the leaf item ultimately responsible for
+the weight change. Only at subsequent (deeper) levels of the placement process
+does (often different) data get shifted to maintain the correct overall
+relative distributions. This general effect is illustrated in the case of a
+binary hierarchy in Figure 3.
+
+The amount of data movement in a hierarchy has a lower bound  of $\frac{\Delta
+w}{W}$, the fraction of data that would reside on a newly added device with
+weight $\Delta w$. Data movement increases with the height $h$ of the
+hierarchy, with a conservative asymptotic upper bound of $h \frac{\Delta
+w}{W}$. The amount of movement approaches this upper bound when $\Delta w$ is
+small relative to $W$, because data objects moving into a subtree at each step
+of the recursion have a very low probability of being mapped to an item with a
+small relative weight.
+
 \section{Self Check Questions}
 
 \begin{itemize}
