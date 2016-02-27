@@ -767,6 +767,26 @@ $r'$ is used first at inner levels of the recursion to attempt a local search
 distribution away from subtrees where collisions are more probable (e.g., where
 buckets are smaller than $n$).
 
+\subsubsection{Replica Ranks}
+Parity and erasure coding schemes have slightly different placement
+requirements than replication. In primary copy replication schemes, it is often
+desirable after a failure for a previous replica target (that already has a
+copy of the data) to become the new primary. In such situations, CRUSH can use
+the ``first n'' suitable targets by reselecting using $r' = r + f$, where $f$
+is the number of failed placement attempts by the current $select(n,t)$ (see
+Algorithm \ref{algorithm:1} line 16). With parity and erasure coding schemes,
+however, the rank or position of a storage device in the CRUSH output is
+critical because each target stores different bits of the data object. In
+particular, if a storage device fails, it should be replaced in CRUSH’s output
+list $\vec{R}$ in place, such that other devices in the list retain the same
+rank (i.e. position in $\vec{R}$, see Figure 2). In such cases, CRUSH reselects
+using $r' = r + f_rn$, where $f_r$ is the number of failed attempts on $r$,
+thus defining a sequence of candidates for each replica rank that are
+probabilistically independent of others’ failures. In contrast, RUSH has no
+special handling of failed devices; like other existing hashing distribution
+functions, it implicitly assumes the use of a ``first n'' approach to skip over
+failed devices in the result, making it unweildly for parity schemes.
+
 \section{Self Check Questions}
 
 \begin{itemize}
