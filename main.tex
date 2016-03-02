@@ -731,7 +731,7 @@ into the result vector with an $emit$ operation.
 \end{table}
 
 As an example, the rule defined in Table \ref{table:1} begins at the root of the hierarchy
-in Figure 1 and with the first $select(1,row)$ chooses a single bucket of type
+in Figure \ref{fig:ceph_host} and with the first $select(1,row)$ chooses a single bucket of type
 ``row'' (it selects row 2). The subsequent $select(3,cabinet)$ chooses three
 distinct cabinets nested  beneath the previously selected $row2 (cab21, cab23,
 cab24)$, while the final $select(1,disk)$ iterates over the three cabinet
@@ -745,6 +745,15 @@ explicitly drawn from different pools of storage, as might be expected in
 remote replication scenarios (in which one replica is stored at a remote site)
 or tiered installations (e. g., fast, near-line storage and slower,
 higher-capacity arrays).
+
+\begin{figure}[h!]
+	\includegraphics[scale=0.40]{ceph_host.png}
+\caption{A partial view of a four-level cluster map hierarchy consisting of
+rows, cabinets, and shelves of disks. Bold lines illustrate items selected by
+each \emph{select} operation in the placement rule and fictitious mapping
+described by Table \ref{table:1}}.
+	\label{fig:ceph_host}
+\end{figure}
 
 \subsubsection{Collisions, Failure, and Overload}
 The $select(n,t)$ operation may traverse many levels of the storage hierarchy
@@ -787,6 +796,7 @@ special handling of failed devices; like other existing hashing distribution
 functions, it implicitly assumes the use of a ``first n'' approach to skip over
 failed devices in the result, making it unweildly for parity schemes.
 
+
 \subsection{Map Changes and Data Movement}
 A critical element of data distribution in a large file system is the response
 to the addition or removal of storage resources. CRUSH maintains a uniform
@@ -810,6 +820,12 @@ and $r' = r + f_rn = 8$ (device $h$) }
 	\label{fig:reselection_behavior}
 \end{figure}
 
+\begin{figure}[h!]
+	\includegraphics[scale=0.50]{data_movement.png}
+\caption{Data movement is a binary hierarchy due to a node addition and the subsequent weight changes.}
+	\label{fig:data_movement}
+\end{figure}
+
 The situation is more complex when the cluster hierarchy is modified, as with
 the addition or removal of storage resources. The CRUSH mapping process, which
 uses the cluster map as a weighted hierarchical decision tree, can result in
@@ -823,7 +839,7 @@ does not necessarily get remapped to the leaf item ultimately responsible for
 the weight change. Only at subsequent (deeper) levels of the placement process
 does (often different) data get shifted to maintain the correct overall
 relative distributions. This general effect is illustrated in the case of a
-binary hierarchy in Figure 3.
+binary hierarchy in Figure \ref{fig:data_movement}.
 
 The amount of data movement in a hierarchy has a lower bound  of $\frac{\Delta
 w}{W}$, the fraction of data that would reside on a newly added device with
