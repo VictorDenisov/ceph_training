@@ -850,6 +850,39 @@ small relative to $W$, because data objects moving into a subtree at each step
 of the recursion have a very low probability of being mapped to an item with a
 small relative weight.
 
+\subsection{Bucket Types}
+
+Generally speaking, CRUSH is designed to reconcile two competing goals:
+efficiency and scalability of the mapping algorithm, and minimal data migration
+to restore a balanced distribution when the cluster changes due to the addition
+or removal of devices. To this end, CRUSH defines four different kinds of
+buckets to represent internal (non-leaf) nodes in the cluster hierarchy:
+\emph{uniform buckets}, \emph{list buckets}, \emph{tree buckets}, and
+\emph{straw buckets}. Each bucket type is based on a different internal data
+structure and utilizes a different function $c(r, x)$ for pseudo-randomly
+choosing nested items during the replica placement process, representing a
+different tradeoff between computation and reorganization efficiency. Uniform
+buckets are restricted in that they must contain items that are all of the same
+weight (much like a conventional hash-based distribution function), while the
+other bucket types can contain a mix of items with any combination of weights.
+These differences are summarized in Table \ref{table:2}.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{ |c|c|c|c|c| }
+	\hline
+	\emph{Action} & \emph{Uniform} & \emph{List} & \emph{Tree} & \emph{Straw} \\
+	\hline
+	Speed & $O(1)$ & $O(n)$ & $O(\log{n})$ & $O(n)$ \\
+	\hline
+	Additions & poor & optimal & good & optimal \\
+	Removals  & poor & poor & good & optimal \\
+	\hline
+\end{tabular}
+\caption{Summary of mapping speed and data reorganization efficiency of different bucket types when items are added to or removed from a bucket.}
+\label{table:2}
+\end{table}
+
 \section{Self Check Questions}
 
 \begin{itemize}
